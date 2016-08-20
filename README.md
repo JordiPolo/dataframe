@@ -4,7 +4,7 @@ DataFrame is a library that implements an API similar to [Python's Pandas](http:
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+The package can be installed as:
 
   1. Add `dataframe` to your list of dependencies in `mix.exs`:
 
@@ -119,7 +119,7 @@ mix test
 
 ## TODO
 
-Example of usage with CSV file
-Finish Statistics module
-Deal with more situations (negative numbers as input, etc.)
-Setting of subtable data
+- Example of usage with CSV file
+- Finish Statistics module
+- Deal with exceptions (negative numbers as input, etc.)
+- Setting of subtable data
