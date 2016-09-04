@@ -15,7 +15,7 @@ defmodule DataFrame.Statistics do
   # max    1.212112  0.567020  0.276232  1.071804
   def describe(frame) do
     values = frame.values |> Table.transpose |> Enum.map(&describe_column/1) |> Table.transpose
-    DataFrame.new(values, ["count", "mean", "std", "min", "25%", "max"], frame.columns)
+    DataFrame.new(values, ["count", "mean", "std", "min", "25%", "50%", "75%", "max"], frame.columns)
   end
 
   defp describe_column(column) do
@@ -25,26 +25,29 @@ defmodule DataFrame.Statistics do
     max = Enum.max(column)
     variance_sum = column |> Enum.map(fn(x) -> :math.pow((mean - x), 2) end) |> Enum.sum
     std = :math.sqrt(variance_sum / count)
-    twenty_five = "23" #percentile(column, 25)
-    [count, mean, std, min, twenty_five, max]
+    twenty_five = percentile(column, 0.25)
+    fifty = percentile(column, 0.5)
+    seventy_five = percentile(column, 0.75)
+    [count, mean, std, min, twenty_five, fifty, seventy_five, max]
   end
 
   defp percentile(values, percentile) do
     values_sorted = Enum.sort values
+    # Given we have for instance 80 elements, this is something like 36.2
     k = percentile * (Enum.count(values_sorted) - 1)
-    #Float.floor(percentile*(Enum.count(values_sorted)-1)+1) - 1
-    f = mod(percentile * (Enum.count(values_sorted) - 1) + 1, 1)
-    Enum.at(values_sorted, k) + (f * (Enum.at(values_sorted, k + 1) - Enum.at(values_sorted, k)))
-  end
+    previous_index = round(Float.floor(k))
+    next_index = round(Float.ceil(k))
 
-  # TODO: Stolen from Elixir's 1.4 Integer class, use that class when released
-  defp mod(dividend, divisor) do
-    remainder = rem(dividend, divisor)
-    if remainder * divisor < 0 do
-      remainder + divisor
-    else
-      remainder
-    end
+    # Then this would be 0.2 and whatever number is in the 36th position
+    previous_number_weight = k - previous_index
+    previous_number = Enum.at(values_sorted, previous_index)
+
+    # And this would be 0.8 and the number in that position
+    next_number_weight = next_index - k
+    next_number = Enum.at(values_sorted, next_index)
+
+    # Weight sum the previous calculations
+    previous_number_weight * previous_number + next_number_weight * next_number
   end
 
 end

@@ -25,6 +25,10 @@ defmodule DataFrame do
     head(frame, size)
   end
 
+  def describe(frame) do
+    DataFrame.Statistics.describe(frame)
+  end
+
   def transpose(frame) do
     %Frame{values: Table.transpose(frame.values), index: frame.columns, columns: frame.index}
   end
