@@ -45,6 +45,7 @@ defmodule Dataframe.Mixfile do
   defp deps do
     [
       {:timex, "~> 3.0"},
+      {:csv, "~> 1.4.2"},
       {:credo, "~> 0.4", only: [:dev, :test]},
       {:dialyxir, "~> 0.3.5", only: [:dev]},
       {:ex_doc, ">= 0.0.0", only: :dev}

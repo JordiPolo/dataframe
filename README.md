@@ -17,6 +17,11 @@ The package can be installed as:
 
 ## Usage
 
+### Tutorials
+
+[Lesson 1)(tutorial/lesson1.md)
+
+
 ### Creation
 ```
 iex(1)>  data = DataFrame.new(DataFrame.Table.build_random(6,4), DataFrame.DateRange.new("2016-09-12", 6), [1,3,4,5])
@@ -132,7 +137,6 @@ mix test
 
 ## TODO
 
-- Example of usage with CSV file
-- Finish Statistics module
 - Deal with exceptions (negative numbers as input, etc.)
 - Setting of subtable data
+- Types of columns (no stat data on text, etc)

@@ -3,7 +3,7 @@ defimpl Inspect, for: DataFrame.Frame do
   alias DataFrame.Table
 
   def inspect(frame, _) do
-    headers = frame.columns
+    headers = ["" | frame.columns]
       |> Enum.map(&(pad(&1)))
       |> Enum.join("")
 
@@ -13,7 +13,7 @@ defimpl Inspect, for: DataFrame.Frame do
       |> Enum.map(&(Enum.join(&1 , "")))
       |> Enum.join("\n")
 
-    concat [pad(""), headers, "\n", data_string]
+    concat [headers, "\n", data_string]
   end
 
   defp pad(element) do

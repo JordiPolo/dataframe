@@ -16,6 +16,11 @@ defmodule DataFrame do
     %Frame{values: table, index: index, columns: columns}
   end
 
+  def new_autoindex(table, columns) do
+    index = Enum.to_list 0..Enum.count(table) - 1
+    %Frame{values: table, index: index, columns: columns}
+  end
+
   def head(frame, size \\ 5) do
     DataFrame.new(Enum.take(frame.values, size), Enum.take(frame.index, size), frame.columns)
   end
@@ -54,7 +59,6 @@ defmodule DataFrame do
       |> DataFrame.new(frame.columns)
   end
 
-
   def loc(frame, index_range, column_range) do
     # Assume the range is continuous in the data also.
     index = Enum.find_index(frame.index, fn(x) -> to_string(x) == to_string(Enum.at(index_range, 0)) end)
@@ -79,6 +83,21 @@ defmodule DataFrame do
 
   def iat(frame, index, column) do
     Table.at(frame.values, index, column)
+  end
+
+  def to_csv(frame, filename, header \\ true) do
+    file = File.open!(filename, [:write])
+    values = if (header) do
+      [frame.columns | frame.values]
+    else
+      frame.values
+    end
+    values |> CSV.encode |> Enum.each(&IO.write(file, &1))
+  end
+
+  def from_csv(filename) do
+    [headers | values] = filename |> File.stream! |> CSV.decode |> Enum.to_list
+    new_autoindex(values, headers)
   end
 
 end
