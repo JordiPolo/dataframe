@@ -26,7 +26,7 @@ frame will be a DataFrame data structure.
 You can think of this structure holding the contents of the BabyDataSet in a format similar to an excel spreadsheet.
 Lets take a look below at the contents inside frame.
 ```elixir
-frame = DataFrame.new(values, ['Names', 'Births'])
+frame = DataFrame.new(values, ["Names", "Births"])
 ```
 
 Output:

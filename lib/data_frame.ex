@@ -12,7 +12,7 @@ defmodule DataFrame do
   def new(table) when is_list(table) do
     index = autoindex_for_table_dimension(table, 0)
     columns = autoindex_for_table_dimension(table, 1)
-    new(table, index, columns)
+    new(table, columns, index)
   end
 
   @doc """
@@ -20,7 +20,7 @@ defmodule DataFrame do
   """
   def new(table, columns) when is_list(table) and is_list(columns) do
     index = autoindex_for_table_dimension(table, 0)
-    new(table, index, columns)
+    new(table, columns, index)
   end
 
   @doc """
@@ -92,7 +92,6 @@ defmodule DataFrame do
       fn(x,y) -> Enum.at(x, column_index) < Enum.at(y, column_index) end
     end
     [values, index] = frame.values
-      |> IO.inspect
       |> Table.append_column(frame.index)
       |> Enum.sort(fn(x,y) -> sorting_func.(x,y) end)
       |> Table.remove_column(0, return_column: true)

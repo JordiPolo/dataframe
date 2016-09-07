@@ -68,9 +68,7 @@ defmodule DataFrame.Table do
 
   @spec append_column([[number]], [number]) :: [[number]]
   def append_column(table, column) do
-    IO.inspect "appending"
     check_dimensional_compatibility!(table, column, 0)
-    IO.inspect "checked"
     column |> Enum.zip(table) |> Enum.map(&Tuple.to_list/1) |> Enum.map(&List.flatten/1)
   end
 
@@ -81,11 +79,8 @@ defmodule DataFrame.Table do
   end
 
   def check_dimensional_compatibility!(table, list, dimension) do
-    IO.inspect "checking"
     list_dimension = Enum.count(list)
     table_dimension = table |> dimensions |> Enum.at(dimension)
-    IO.inspect table
-    IO.inspect table_dimension
     if list_dimension != table_dimension do
       raise ArgumentError,
         "Table dimension #{table_dimension} does not match the #{dimension_name(dimension)} dimension #{list_dimension}"
