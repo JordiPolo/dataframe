@@ -38,7 +38,7 @@ defmodule DataFrame.Table do
   @spec dimensions([[number]]) :: [non_neg_integer]
   def dimensions(table) do
     row_count = table |> Enum.filter(&(!Enum.empty?(&1))) |> Enum.count
-    column_count = table |> Enum.at(0) |> Enum.filter(&(!Enum.empty?(&1))) |> Enum.count
+    column_count = table |> Enum.at(0) |> Enum.count
     [row_count, column_count]
   end
 

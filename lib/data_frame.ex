@@ -10,11 +10,18 @@ defmodule DataFrame do
     Creates a new Dataframe from a 2D table, an index and a column array
   """
   def new(table, index, columns) do
+    # TODO: Check matching dimensions
     %Frame{values: table, index: index, columns: columns}
   end
 
   def new(table, columns) do
-    index = Enum.to_list 0..Enum.count(table) - 1
+    # TODO: check matching dimensions
+    table_first_dimmension = table |> Table.dimensions |> Enum.at(0)
+    index = if table_first_dimmension == 0 do
+      []
+    else
+      Enum.to_list 0..table_first_dimmension - 1
+    end
     %Frame{values: table, index: index, columns: columns}
   end
 
