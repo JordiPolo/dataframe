@@ -1,4 +1,6 @@
 # Dataframe
+[![Build
+Status](https://travis-ci.org/JordiPolo/dataframe.svg?branch=master)](https://travis-ci.org/JordiPolo/dataframe)
 
 DataFrame is a library that implements an API similar to [Python's Pandas](http://pandas.pydata.org/) or [R's data.frame()](http://www.r-tutor.com/r-introduction/data-frame).
 
@@ -19,7 +21,7 @@ The package can be installed as:
 
 ### Tutorials
 
-[Lesson 1)(tutorial/lesson1.md)
+- [Lesson 1](tutorial/lesson1.md)
 
 
 ### Creation
