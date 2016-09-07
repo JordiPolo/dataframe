@@ -37,8 +37,8 @@ defmodule DataFrame.Table do
 
   @spec dimensions([[number]]) :: [non_neg_integer]
   def dimensions(table) do
-    row_count = Enum.count(table)
-    column_count = Enum.count(Enum.at(table, 0))
+    row_count = table |> Enum.filter(&(!Enum.empty?(&1))) |> Enum.count
+    column_count = table |> Enum.at(0) |> Enum.filter(&(!Enum.empty?(&1))) |> Enum.count
     [row_count, column_count]
   end
 
@@ -49,8 +49,11 @@ defmodule DataFrame.Table do
 
   @spec add_column([[number]], [number]) :: [[number]]
   def add_column(table, column) do
-    if Enum.count(column) != Enum.count(table) do
-      raise ArgumentError, "column is not of the right dimmension"
+    column_dimension = Enum.count(column)
+    table_first_dimension = table |> dimensions |> Enum.at(0)
+    if column_dimension != table_first_dimension do
+      raise ArgumentError,
+        "Column of dimension #{column_dimension} is not of the right dimension, should be #{table_first_dimension}"
     end
     column |> Enum.zip(table) |> Enum.map(&Tuple.to_list/1) |> Enum.map(&List.flatten/1)
   end

@@ -6,17 +6,14 @@ defmodule DataFrame do
   alias DataFrame.Table
   alias DataFrame.Frame
 
+  @doc """
+    Creates a new Dataframe from a 2D table, an index and a column array
+  """
   def new(table, index, columns) do
     %Frame{values: table, index: index, columns: columns}
   end
 
-  def new(table_with_index, columns) do
-    index = Table.columns(table_with_index, 0..0)
-    table = Table.columns(table_with_index, 1..-1)
-    %Frame{values: table, index: index, columns: columns}
-  end
-
-  def new_autoindex(table, columns) do
+  def new(table, columns) do
     index = Enum.to_list 0..Enum.count(table) - 1
     %Frame{values: table, index: index, columns: columns}
   end
@@ -97,7 +94,7 @@ defmodule DataFrame do
 
   def from_csv(filename) do
     [headers | values] = filename |> File.stream! |> CSV.decode |> Enum.to_list
-    new_autoindex(values, headers)
+    new(values, headers)
   end
 
 end
