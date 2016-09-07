@@ -17,7 +17,7 @@ births = [968, 155, 77, 578, 973]
 
 First we create a 2D data structure with these two columns:
 ```elixir
-values = DataFrame.Table.build_from_columns([names, births])
+values = DataFrame.Table.new([names, births], from_columns: true)
 ```
 
 We are basically done creating the data set. We now will use the library to export this data set into a csv file.
@@ -26,7 +26,7 @@ frame will be a DataFrame data structure.
 You can think of this structure holding the contents of the BabyDataSet in a format similar to an excel spreadsheet.
 Lets take a look below at the contents inside frame.
 ```elixir
-frame = DataFrame.new_autoindex data, ['Names', 'Births']
+frame = DataFrame.new(values, ['Names', 'Births'])
 ```
 
 Output:
@@ -45,7 +45,7 @@ Export the dataframe to a csv file. We can name the file births1880.csv.
 The function to_csv will be used to export the file. The file will be saved in the same location of the project unless specified otherwise.
 
 ```elixir
-DataFrame.to_csv("births1880.csv")
+DataFrame.to_csv(frame, "births1880.csv")
 ```
 
 To import the data we can use the `from_csv` function.

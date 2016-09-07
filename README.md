@@ -24,7 +24,7 @@ The package can be installed as:
 
 ### Creation
 ```
-iex(1)>  data = DataFrame.new(DataFrame.Table.build_random(6,4), DataFrame.DateRange.new("2016-09-12", 6), [1,3,4,5])
+iex(1)>  data = DataFrame.new(DataFrame.Table.build_random(6,4), [1,3,4,5], DataFrame.DateRange.new("2016-09-12", 6))
               1             3             4             5
 2016-09-12    0.3216495192  0.3061978162  0.5240627861  0.3014870998
 2016-09-13    0.7085624128  0.1027917034  0.0274851281  0.4999253931

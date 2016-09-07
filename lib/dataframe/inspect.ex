@@ -8,7 +8,7 @@ defimpl Inspect, for: DataFrame.Frame do
       |> Enum.join("")
 
     data_string = frame.values
-      |> Table.add_column(frame.index)
+      |> Table.append_column(frame.index)
       |> Table.map(&pad(&1))
       |> Enum.map(&(Enum.join(&1 , "")))
       |> Enum.join("\n")

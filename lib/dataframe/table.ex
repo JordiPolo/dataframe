@@ -23,6 +23,14 @@ defmodule DataFrame.Table do
     Enum.map(1..row_count, fn (row) -> Enum.map(1..column_count, fn(column) -> function.(row, column) end) end)
   end
 
+  def new(list_of_list) do
+    list_of_list
+  end
+
+  def new(list_of_lists, from_columns: true) do
+    transpose(list_of_lists)
+  end
+
   # Converts a list of columns to a list of rows which is our internal structure
   # [[1,3,5], [2,4,6]]  ->  [[1,2], [3,4], [5,6]]
   def build_from_columns(list_of_columns) do
@@ -58,15 +66,26 @@ defmodule DataFrame.Table do
     Enum.map(table, fn(column) -> Enum.map(column, fn(y) -> func.(y) end) end)
   end
 
-  @spec add_column([[number]], [number]) :: [[number]]
-  def add_column(table, column) do
-    check_dimensional_compatibility(table, column, 0)
+  @spec append_column([[number]], [number]) :: [[number]]
+  def append_column(table, column) do
+    IO.inspect "appending"
+    check_dimensional_compatibility!(table, column, 0)
+    IO.inspect "checked"
     column |> Enum.zip(table) |> Enum.map(&Tuple.to_list/1) |> Enum.map(&List.flatten/1)
   end
 
-  def check_dimensional_compatibility(table, list, dimension) do
+  def remove_column(table, column_index, return_column: true) do
+    column = List.flatten columns(table, column_index..column_index)
+    rest = columns(table, 1..-1)
+    [rest, column]
+  end
+
+  def check_dimensional_compatibility!(table, list, dimension) do
+    IO.inspect "checking"
     list_dimension = Enum.count(list)
     table_dimension = table |> dimensions |> Enum.at(dimension)
+    IO.inspect table
+    IO.inspect table_dimension
     if list_dimension != table_dimension do
       raise ArgumentError,
         "Table dimension #{table_dimension} does not match the #{dimension_name(dimension)} dimension #{list_dimension}"

@@ -26,9 +26,9 @@ defmodule DataFrame do
   @doc """
     Creates a new Frame from a 2D table, an index and a column array
   """
-  def new(table, index, columns) when is_list(table) and is_list(index) and is_list(columns) do
-    Table.check_dimensional_compatibility(table, index, 0)
-    Table.check_dimensional_compatibility(table, columns, 1)
+  def new(table, columns, index) when is_list(table) and is_list(index) and is_list(columns) do
+    Table.check_dimensional_compatibility!(table, index, 0)
+    Table.check_dimensional_compatibility!(table, columns, 1)
     %Frame{values: table, index: index, columns: columns}
   end
 
@@ -45,7 +45,7 @@ defmodule DataFrame do
     Returns the information at the top of the frame. Defaults to 5 lines.
   """
   def head(frame, size \\ 5) do
-    DataFrame.new(Enum.take(frame.values, size), Enum.take(frame.index, size), frame.columns)
+    DataFrame.new(Enum.take(frame.values, size), frame.columns, Enum.take(frame.index, size))
   end
 
   @doc """
@@ -91,10 +91,13 @@ defmodule DataFrame do
     else
       fn(x,y) -> Enum.at(x, column_index) < Enum.at(y, column_index) end
     end
-    frame.values
-      |> Table.add_column(frame.index)
+    [values, index] = frame.values
+      |> IO.inspect
+      |> Table.append_column(frame.index)
       |> Enum.sort(fn(x,y) -> sorting_func.(x,y) end)
-      |> DataFrame.new(frame.columns)
+      |> Table.remove_column(0, return_column: true)
+
+      DataFrame.new(values, frame.columns, index)
   end
 
   @doc """
@@ -118,7 +121,7 @@ defmodule DataFrame do
     new_index = frame.index |> Enum.slice(index)
     new_columns = frame.columns |> Enum.slice(columns)
     values = frame.values |> Table.slice(index, columns)
-    DataFrame.new(values, new_index, new_columns)
+    DataFrame.new(values, new_columns, new_index)
   end
 
   @doc """
@@ -127,14 +130,14 @@ defmodule DataFrame do
   def at(frame, index_name, column_name) do
     index = Enum.find_index(frame.index, fn(x) -> to_string(x) == to_string(index_name) end)
     column = Enum.find_index(frame.columns, fn(x) -> to_string(x) == to_string(column_name) end)
-    DataFrame.iat(frame, index, column)
+    DataFrame.iat(frame, column, index)
   end
 
   @doc """
     Returns a value located at the position indicated by an index position and column position.
   """
   def iat(frame, index, column) do
-    Table.at(frame.values, index, column)
+    Table.at(frame.values, column, index)
   end
 
   @doc """
@@ -159,4 +162,4 @@ defmodule DataFrame do
   end
 
 end
-#DataFrame.new(Table.build_random(6,4), DateRange.new("2016-09-12", 6), [1,3,4,5])
+#DataFrame.new(Table.build_random(6,4), [1,3,4,5], DateRange.new("2016-09-12", 6) )
