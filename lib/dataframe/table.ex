@@ -7,6 +7,9 @@ defmodule DataFrame.Table do
     5 6
     Internally we are working with
     [[1,2], [3,4], [5,6]]
+    dimensions would be:
+    x_dimension = 2
+    y_dimension = 3
   """
 
   @spec build_random(non_neg_integer, non_neg_integer) :: [[number]]
@@ -35,6 +38,14 @@ defmodule DataFrame.Table do
     table |> Enum.slice(range_index) |> Enum.map(&Enum.slice(&1, range_column))
   end
 
+  def x_dimension(table) do
+    dimensions(table) |> Enum.at(1)
+  end
+
+  def y_dimension(table) do
+    dimensions(table) |> Enum.at(0)
+  end
+
   @spec dimensions([[number]]) :: [non_neg_integer]
   def dimensions(table) do
     row_count = table |> Enum.filter(&(!Enum.empty?(&1))) |> Enum.count
@@ -49,14 +60,27 @@ defmodule DataFrame.Table do
 
   @spec add_column([[number]], [number]) :: [[number]]
   def add_column(table, column) do
-    column_dimension = Enum.count(column)
-    table_first_dimension = table |> dimensions |> Enum.at(0)
-    if column_dimension != table_first_dimension do
-      raise ArgumentError,
-        "Column of dimension #{column_dimension} is not of the right dimension, should be #{table_first_dimension}"
-    end
+    check_dimensional_compatibility(table, column, 0)
     column |> Enum.zip(table) |> Enum.map(&Tuple.to_list/1) |> Enum.map(&List.flatten/1)
   end
+
+  def check_dimensional_compatibility(table, list, dimension) do
+    list_dimension = Enum.count(list)
+    table_dimension = table |> dimensions |> Enum.at(dimension)
+    if list_dimension != table_dimension do
+      raise ArgumentError,
+        "Table dimension #{table_dimension} does not match the #{dimension_name(dimension)} dimension #{list_dimension}"
+    end
+  end
+
+  defp dimension_name(dimension) when dimension == 1 do
+    "row"
+  end
+
+  defp dimension_name(dimension) when dimension == 0 do
+    "column"
+  end
+
 
   def columns(table, range) do
     Enum.map(table, fn(x) -> Enum.slice(x, range) end)
