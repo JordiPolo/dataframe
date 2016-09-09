@@ -10,26 +10,29 @@ defmodule DataFrame do
     Creates a new Frame from a 2D table, It creates a numeric index and a numeric column array automatically.
   """
   def new(table) when is_list(table) do
-    index = autoindex_for_table_dimension(table, 0)
-    columns = autoindex_for_table_dimension(table, 1)
-    new(table, columns, index)
+    values = Table.new(table)
+    index = autoindex_for_table_dimension(values, 0)
+    columns = autoindex_for_table_dimension(values, 1)
+    new(values, columns, index)
   end
 
   @doc """
     Creates a new Frame from a 2D table, and a column array. It creates a numeric index automatically.
   """
   def new(table, columns) when is_list(table) and is_list(columns) do
-    index = autoindex_for_table_dimension(table, 0)
-    new(table, columns, index)
+    values = Table.new(table)
+    index = autoindex_for_table_dimension(values, 0)
+    new(values, columns, index)
   end
 
   @doc """
     Creates a new Frame from a 2D table, an index and a column array
   """
   def new(table, columns, index) when is_list(table) and is_list(index) and is_list(columns) do
-    Table.check_dimensional_compatibility!(table, index, 0)
-    Table.check_dimensional_compatibility!(table, columns, 1)
-    %Frame{values: table, index: index, columns: columns}
+    values = Table.new(table)
+    Table.check_dimensional_compatibility!(values, index, 0)
+    Table.check_dimensional_compatibility!(values, columns, 1)
+    %Frame{values: values, index: index, columns: columns}
   end
 
   defp autoindex_for_table_dimension(table, dimension) do

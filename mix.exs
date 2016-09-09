@@ -3,7 +3,7 @@ defmodule Dataframe.Mixfile do
 
   def project do
     [app: :dataframe,
-     version: "0.1.0",
+     version: "0.2.0",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -15,7 +15,7 @@ defmodule Dataframe.Mixfile do
 
   defp description do
     """
-    DataFrame implementation for Elixir
+    Implementation of R's data.frame() or Python's Pandas for Elixir
     """
   end
 
