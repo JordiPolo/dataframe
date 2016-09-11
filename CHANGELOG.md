@@ -1,3 +1,6 @@
+# Master
+- Added cumsum function
+
 # 0.2.0
 - Added describe function
 - Added CSV support

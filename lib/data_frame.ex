@@ -44,27 +44,9 @@ defmodule DataFrame do
     end
   end
 
-  @doc """
-    Returns the information at the top of the frame. Defaults to 5 lines.
-  """
-  def head(frame, size \\ 5) do
-    DataFrame.new(Enum.take(frame.values, size), frame.columns, Enum.take(frame.index, size))
-  end
-
-  @doc """
-    Returns the information at the bottom of the frame. Defaults to 5 lines.
-  """
-  def tail(frame, the_size \\ 5) do
-    size = -the_size
-    head(frame, size)
-  end
-
-  @doc """
-    Returns a statistical description of the data in the frame
-  """
-  def describe(frame) do
-    DataFrame.Statistics.describe(frame)
-  end
+  # ##################################################
+  #  Ordering
+  # ##################################################
 
   @doc """
     Returns a Frame which data has been transposed.
@@ -102,17 +84,54 @@ defmodule DataFrame do
       DataFrame.new(values, frame.columns, index)
   end
 
+  # ##################################################
+  #  Selecting
+  # ##################################################
+
+  @doc """
+    Returns the information at the top of the frame. Defaults to 5 lines.
+  """
+  def head(frame, size \\ 5) do
+    DataFrame.new(Enum.take(frame.values, size), frame.columns, Enum.take(frame.index, size))
+  end
+
+  @doc """
+    Returns the information at the bottom of the frame. Defaults to 5 lines.
+  """
+  def tail(frame, the_size \\ 5) do
+    size = -the_size
+    head(frame, size)
+  end
+
+  def column(frame, column_name) do
+    column = Enum.find_index(frame.columns, fn(x) -> to_string(x) == to_string(column_name) end)
+    frame.values |> Table.transpose |> Enum.at(column)
+  end
+
   @doc """
     Returns a slice of the data in the frame.
     Parameters are the ranges with names in the index and column
   """
   def loc(frame, index_range, column_range) do
-    # Assume the range is continuous in the data also.
+    DataFrame.iloc(frame, index_range_integer(frame, index_range), column_range_integer(frame, column_range))
+  end
+
+  defp index_range_integer(_, :all) do
+    0..-1
+  end
+
+  defp index_range_integer(frame, index_range) do
     index = Enum.find_index(frame.index, fn(x) -> to_string(x) == to_string(Enum.at(index_range, 0)) end)
+    index..(index + Enum.count(index_range) - 1)
+  end
+
+  defp column_range_integer(_, :all) do
+    0..-1
+  end
+
+  defp column_range_integer(frame, column_range) do
     column = Enum.find_index(frame.columns, fn(x) -> to_string(x) == to_string(Enum.at(column_range, 0)) end)
-    index_range_integer = index..(index + Enum.count(index_range) - 1)
-    column_range_integer = column..(column + Enum.count(column_range) - 1)
-    DataFrame.iloc(frame, index_range_integer, column_range_integer)
+    column..(column + Enum.count(column_range) - 1)
   end
 
   @doc """
@@ -142,6 +161,35 @@ defmodule DataFrame do
     Table.at(frame.values, column, index)
   end
 
+  # ##################################################
+  #  Mathematics
+  # ##################################################
+
+  @doc """
+    Returns the cummulative sum
+  """
+  def cumsum(frame) do
+    columns = frame.values |> Table.transpose
+    cumsummed = columns |> Enum.map( fn(column) ->
+      Enum.flat_map_reduce(column, 0, fn(x, acc) ->
+        {[x + acc], acc + x}
+      end)
+    end)
+    data = Enum.map cumsummed, &(elem(&1, 0))
+    DataFrame.new(Table.transpose(data), frame.columns, frame.index)
+  end
+
+  @doc """
+    Returns a statistical description of the data in the frame
+  """
+  def describe(frame) do
+    DataFrame.Statistics.describe(frame)
+  end
+
+  # ##################################################
+  #  Importing, exporting, plotting
+  # ##################################################
+
   @doc """
     Writes the information of the frame into a csv file. By default the column names are written also
   """
@@ -164,4 +212,4 @@ defmodule DataFrame do
   end
 
 end
-#DataFrame.new(Table.build_random(6,4), [1,3,4,5], DateRange.new("2016-09-12", 6) )
+#DataFrame.new(DataFrame.Table.build_random(6,4), [1,3,4,5], DataFrame.DateRange.new("2016-09-12", 6) )

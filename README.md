@@ -6,15 +6,13 @@ DataFrame is a library that implements an API similar to [Python's Pandas](http:
 
 ## Installation
 
-The package can be installed as:
+Add `dataframe` to your list of dependencies in `mix.exs`:
 
-  1. Add `dataframe` to your list of dependencies in `mix.exs`:
-
-    ```elixir
-    def deps do
-      [{:dataframe, "~> 0.1.0"}]
-    end
-    ```
+```elixir
+def deps do
+  [{:dataframe, "~> 0.1.0"}]
+end
+```
 
 
 ## Usage
