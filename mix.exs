@@ -44,6 +44,7 @@ defmodule Dataframe.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
+      {:explot, "~> 0.1.0"},
       {:timex, "~> 3.0"},
       {:csv, "~> 1.4.2"},
       {:credo, "~> 0.4", only: [:dev, :test]},

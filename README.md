@@ -128,6 +128,21 @@ DataFrame.iat(data, 0, 0)
 
 The library is in very early stages of development. No effort has been made to optimize its performance. Expect it to be slow.
 
+### Plotting
+
+If you have Python and Matplotlib you can plot the data in your Dataframe.
+Check out the [Explot](https://github.com/JordiPolo/explot) package for installation details.
+
+Let's plot the cummulative sum of the values:
+
+```elixir
+ data |> DataFrame.cumsum |> DataFrame.plot
+```
+
+Will give us this graph:
+![](readme_example.png)
+
+
 ## Development
 
 Run tests

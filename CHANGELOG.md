@@ -1,9 +1,11 @@
 # Master
-- Added cumsum function
+- DataFrame.cumsum function
+- DataFrame.plot function
+- DataFrame.parse funcion
 
 # 0.2.0
-- Added describe function
-- Added CSV support
+- DataFrame.describe function
+- CSV support
 - Rationalized DataFrame.new
 - Document DataFrame functions
 - DataFrames can be initialized with a list of tuples

@@ -44,6 +44,35 @@ defmodule DataFrame do
     end
   end
 
+  @doc """
+    Creates a Frame from the textual output of a frame (allows copying data from webpages, etc.)
+  """
+  def parse(text) do
+    [header | data ] = String.split(text, "\n", trim: true)
+    columns = String.split(header, " ", trim: true)
+    data_values = Enum.map(data, &(String.split(&1, " ", trim: true)))
+    [values, index] = Table.remove_column(data_values, 0, return_column: true)
+    values_data = Table.map(values, &transform_type/1)
+    columns_data = Enum.map(columns, &transform_type/1)
+    index_data = Enum.map(index, &transform_type/1)
+    new(values_data, columns_data, index_data)
+  end
+
+  # TODO: Refactor, probably this is the most non-Elixir code even written
+  defp transform_type(element) do
+    int = Integer.parse(element)
+    if int == :error or (elem(int, 1) != "") do
+      float = Float.parse(element)
+      if float == :error or (elem(float, 1) != "") do
+        element
+      else
+        elem(float, 0)
+      end
+    else
+      elem(int, 0)
+    end
+  end
+
   # ##################################################
   #  Ordering
   # ##################################################
@@ -211,5 +240,16 @@ defmodule DataFrame do
     new(values, headers)
   end
 
+  def plot(frame) do
+    plotter = Explot.new
+    columns_with_index = frame.values |> Table.transpose |> Enum.with_index
+    Enum.each columns_with_index, fn(column_with_index) ->
+      column = elem(column_with_index, 0)
+      column_name = Enum.at(frame.columns, elem(column_with_index, 1))
+      Explot.add_list(plotter, column, column_name)
+    end
+    Explot.x_axis_labels(plotter, frame.index)
+    Explot.show(plotter)
+  end
 end
 #DataFrame.new(DataFrame.Table.build_random(6,4), [1,3,4,5], DataFrame.DateRange.new("2016-09-12", 6) )
