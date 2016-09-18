@@ -112,7 +112,7 @@ defmodule DataFrame do
   DataFrame.to_list_of_maps DataFrame.new([[1,2],[3,4]], ["A", "B"])
   > [%{"A" => 1, "B" => 2}, %{"A" => 3, "B" => 4}]
   """
-  def to_list_of_maps(frame) do
+  def to_list_of_maps(_) do
     # TODO
   end
 
@@ -173,29 +173,50 @@ defmodule DataFrame do
   # TODO: merge with loc?
   """
   def columns(frame, column_names) do
-    column_index = frame.columns |> Enum.with_index |> Enum.map( fn(tuple) ->
-      if Enum.find_index(column_names, fn(name) -> name == elem(tuple, 0) end) != nil do
-        elem(tuple, 1)
-      end
-    end)
+    icolumns(frame, indexes_by_name(frame.columns, column_names))
+  end
 
-    column_indexes = Enum.filter(column_index, fn(x) -> x != nil end)
-
-    columns = at_a(frame.columns, column_indexes)
-    values = Table.columns_index(frame.values, column_indexes)
+  def icolumns(frame, column_indexes) do
+    columns = multiple_at(frame.columns, column_indexes)
+    values = Table.columns(frame.values, column_indexes)
     DataFrame.new(values, columns, frame.index)
+  end
+
+  def rows(frame, row_names) do
+    irows(frame, indexes_by_name(frame.index, row_names))
+  end
+
+  def irows(frame, row_indexes) do
+    rows = multiple_at(frame.index, row_indexes)
+    values = Table.rows(frame.values, row_indexes)
+    DataFrame.new(values, frame.columns, rows)
   end
 
   # TODO: move somewhere
   # same than .at but accepting a list of indexes
-  defp at_a(list, list_index) do
+  defp multiple_at(list, list_index) do
     Enum.map(list_index, fn(index) -> Enum.at(list, index) end)
   end
 
-  @spec column(Frame.t, String.t) :: Frame.t
+
+  defp indexes_by_name(name_list, selected_name) when is_list(name_list) and is_binary(selected_name) do
+    indexes_by_name(name_list, [selected_name])
+  end
+  defp indexes_by_name(name_list, selected_names) when is_list(name_list) and is_list(selected_names) do
+    indexes = name_list |> Enum.with_index |> Enum.reduce([], fn(tuple, acc) ->
+      if Enum.member?(selected_names, elem(tuple,0)) do
+        [elem(tuple, 1) | acc]
+      else
+        acc
+      end
+    end)
+    Enum.reverse(indexes)
+  end
+
+  @spec column(Frame.t, String.t) :: list()
   def column(frame, column_name) do
     column = Enum.find_index(frame.columns, fn(x) -> to_string(x) == to_string(column_name) end)
-    frame.values |> Table.transpose |> Enum.at(column)
+    frame.values |> Table.columns([column]) |> List.flatten
   end
 
   @doc """
@@ -301,14 +322,14 @@ defmodule DataFrame do
       end
     end)
     {new_table, new_index} = delete_nil_rows(with_nils, frame.index)
-    new_columns = frame.columns
+    #  new_columns = frame.columns
     {final_table, new_columns} = delete_nil_rows(Table.transpose(new_table), frame.columns)
     result_table = if final_table == [[]] do
         [[]]
       else
          Table.transpose(final_table)
         end
-    DataFrame.new(new_table, new_columns, new_index)
+    DataFrame.new(result_table, new_columns, new_index)
   end
 
   defp delete_nil_rows([], _) do

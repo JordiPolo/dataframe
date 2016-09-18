@@ -2,6 +2,7 @@
 - DataFrame.cumsum function
 - DataFrame.plot function
 - DataFrame.parse funcion
+- Functions to select columns and rows by name and index
 - Several experimental functions. To rationalize implementation before
   next version
 

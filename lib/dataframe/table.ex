@@ -35,8 +35,7 @@ defmodule DataFrame.Table do
 
   @spec build(non_neg_integer, non_neg_integer, function) :: table
   def build(row_count, column_count, function) do
-    data = Enum.map(1..row_count, fn (row) -> Enum.map(1..column_count, fn(column) -> function.(row, column) end) end)
-    # %DataFrame.NewTable{ data: data }
+    Enum.map(1..row_count, fn (row) -> Enum.map(1..column_count, fn(column) -> function.(row, column) end) end)
   end
 
   def new([h | t]) when is_tuple(h) do
@@ -66,6 +65,14 @@ defmodule DataFrame.Table do
     [row_count, column_count]
   end
 
+  def x_dimension(table) do
+    dimensions(table) |> Enum.at(1)
+  end
+
+  def y_dimension(table) do
+    dimensions(table) |> Enum.at(0)
+  end
+
   def check_dimensional_compatibility!(table, list, dimension) do
     list_dimension = Enum.count(list)
     table_dimension = table |> dimensions |> Enum.at(dimension)
@@ -91,8 +98,8 @@ defmodule DataFrame.Table do
   # ##################################################
 
   @spec at(table, number, number) :: any
-  def at(table, index, column) do
-    table |> Enum.at(index) |> Enum.at(column)
+  def at(table, row, column) do
+    table |> Enum.at(row) |> Enum.at(column)
   end
 
   @spec slice(table, Range.t, Range.t) :: table
@@ -100,30 +107,44 @@ defmodule DataFrame.Table do
     table |> Enum.slice(range_index) |> Enum.map(&Enum.slice(&1, range_column))
   end
 
-  def x_dimension(table) do
-    dimensions(table) |> Enum.at(1)
+  @spec rows_columns(table, Range.t| list, Range.t | list) :: table
+  def rows_columns(table, row_info, column_info) do
+    table |> rows(row_info) |> columns(column_info)
   end
 
-  def y_dimension(table) do
-    dimensions(table) |> Enum.at(0)
+  @spec rows(table, list) :: table
+  def rows(table, row_indexes) when is_list(row_indexes) do
+    multiple_at(table, row_indexes)
   end
 
-  # Real selecting of columns where we can have any column, substitute the columns method below
-  def columns_index(table, columns) do
-    Enum.map(table, fn(row) -> at_a(row, columns) end)
+  @spec rows(table, Range.t) :: table
+  def rows(table, first..last) when is_integer(first) and is_integer(last) do
+    Enum.slice(table, first..last)
   end
 
-  defp at_a(list, list_index) do
-    Enum.map(list_index, fn(index) -> Enum.at(list, index) end)
+  @spec columns(table, list) :: table
+  def columns(table, column_indexes) when is_list(column_indexes) do
+    Enum.map(table, fn(row) -> multiple_at(row, column_indexes) end)
   end
 
-  def columns(table, range) do
-    Enum.map(table, fn(x) -> Enum.slice(x, range) end)
+  @spec columns(table, Range.t) :: table
+  def columns(table, first..last) when is_integer(first) and is_integer(last) do
+    Enum.map(table, fn(x) -> Enum.slice(x, first..last) end)
+  end
+
+  defp multiple_at(list, list_index) do
+    Enum.map(list_index, &(Enum.at(list, &1)))
+    #Enum.map(list_index, fn(index) -> Enum.at(list, index) end)
   end
 
   # ##################################################
   #  Transversing
   # ##################################################
+
+  @spec map_rows(table, function) :: table
+  def map_rows(table, func) do
+    Enum.map(table, &(func.(&1)))
+  end
 
   @spec map(table, function) :: table
   def map(table, func) do
