@@ -8,4 +8,10 @@ defmodule DataFrame.Frame do
     * `columns` - The name of each column of the table
   """
   defstruct values: [[]], index: [], columns: []
+
+  @type t :: %__MODULE__{
+    values: nonempty_list(list(any())),
+    index: list(any()),
+    columns: list(any())
+  }
 end

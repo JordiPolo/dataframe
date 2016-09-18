@@ -17,6 +17,16 @@ defmodule DataFrame.Table do
   """
   @type table :: nonempty_list(list(any))
 
+  # Experimental
+  def reduce(t, acc, fun) do
+    t.data
+    |> Enum.map(fn(row) -> Enum.reduce(row, acc, fun) end)
+    |> Enum.reduce(acc, fun)
+  end
+  # ##################################################
+  #  Creation
+  # ##################################################
+
   @spec build_random(non_neg_integer, non_neg_integer) :: [[number]]
   def build_random(row_count, column_count) do
     function = fn(_, _) -> :rand.uniform end
@@ -25,7 +35,8 @@ defmodule DataFrame.Table do
 
   @spec build(non_neg_integer, non_neg_integer, function) :: table
   def build(row_count, column_count, function) do
-    Enum.map(1..row_count, fn (row) -> Enum.map(1..column_count, fn(column) -> function.(row, column) end) end)
+    data = Enum.map(1..row_count, fn (row) -> Enum.map(1..column_count, fn(column) -> function.(row, column) end) end)
+    # %DataFrame.NewTable{ data: data }
   end
 
   def new([h | t]) when is_tuple(h) do
@@ -44,47 +55,15 @@ defmodule DataFrame.Table do
     transpose(list_of_lists)
   end
 
-
-  @spec at(table, number, number) :: any
-  def at(table, index, column) do
-    table |> Enum.at(index) |> Enum.at(column)
-  end
-
-  @spec slice(table, Range.t, Range.t) :: table
-  def slice(table, range_index, range_column) do
-    table |> Enum.slice(range_index) |> Enum.map(&Enum.slice(&1, range_column))
-  end
-
-  def x_dimension(table) do
-    dimensions(table) |> Enum.at(1)
-  end
-
-  def y_dimension(table) do
-    dimensions(table) |> Enum.at(0)
-  end
+  # ##################################################
+  #  Information
+  # ##################################################
 
   @spec dimensions(table) :: [non_neg_integer]
   def dimensions(table) do
     row_count = table |> Enum.filter(&(!Enum.empty?(&1))) |> Enum.count
     column_count = table |> Enum.at(0) |> Enum.count
     [row_count, column_count]
-  end
-
-  @spec map(table, function) :: table
-  def map(table, func) do
-    Enum.map(table, fn(column) -> Enum.map(column, fn(y) -> func.(y) end) end)
-  end
-
-  @spec append_column(table, [any]) :: table
-  def append_column(table, column) do
-    check_dimensional_compatibility!(table, column, 0)
-    column |> Enum.zip(table) |> Enum.map(&Tuple.to_list/1) |> Enum.map(&List.flatten/1)
-  end
-
-  def remove_column(table, column_index, return_column: true) do
-    column = List.flatten columns(table, column_index..column_index)
-    rest = columns(table, 1..-1)
-    [rest, column]
   end
 
   def check_dimensional_compatibility!(table, list, dimension) do
@@ -107,8 +86,69 @@ defmodule DataFrame.Table do
   end
 
 
+  # ##################################################
+  #  Selecting
+  # ##################################################
+
+  @spec at(table, number, number) :: any
+  def at(table, index, column) do
+    table |> Enum.at(index) |> Enum.at(column)
+  end
+
+  @spec slice(table, Range.t, Range.t) :: table
+  def slice(table, range_index, range_column) do
+    table |> Enum.slice(range_index) |> Enum.map(&Enum.slice(&1, range_column))
+  end
+
+  def x_dimension(table) do
+    dimensions(table) |> Enum.at(1)
+  end
+
+  def y_dimension(table) do
+    dimensions(table) |> Enum.at(0)
+  end
+
+  # Real selecting of columns where we can have any column, substitute the columns method below
+  def columns_index(table, columns) do
+    Enum.map(table, fn(row) -> at_a(row, columns) end)
+  end
+
+  defp at_a(list, list_index) do
+    Enum.map(list_index, fn(index) -> Enum.at(list, index) end)
+  end
+
   def columns(table, range) do
     Enum.map(table, fn(x) -> Enum.slice(x, range) end)
+  end
+
+  # ##################################################
+  #  Transversing
+  # ##################################################
+
+  @spec map(table, function) :: table
+  def map(table, func) do
+    Enum.map(table, fn(column) -> Enum.map(column, fn(y) -> func.(y) end) end)
+  end
+
+  @spec with_index(table) :: nonempty_list({nonempty_list({any(), non_neg_integer()}), non_neg_integer()})
+  def with_index(table) do
+    table |> Enum.map(&Enum.with_index/1) |> Enum.with_index
+  end
+
+  # ##################################################
+  #  Modyfing
+  # ##################################################
+
+  @spec append_column(table, [any]) :: table
+  def append_column(table, column) do
+    check_dimensional_compatibility!(table, column, 0)
+    column |> Enum.zip(table) |> Enum.map(&Tuple.to_list/1) |> Enum.map(&List.flatten/1)
+  end
+
+  def remove_column(table, column_index, return_column: true) do
+    column = List.flatten columns(table, column_index..column_index)
+    rest = columns(table, 1..-1)
+    [rest, column]
   end
 
 #  @spec transpose(table) :: table

@@ -2,6 +2,8 @@
 - DataFrame.cumsum function
 - DataFrame.plot function
 - DataFrame.parse funcion
+- Several experimental functions. To rationalize implementation before
+  next version
 
 # 0.2.0
 - DataFrame.describe function
