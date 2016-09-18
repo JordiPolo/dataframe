@@ -18,7 +18,7 @@ defmodule DataFrame.Table do
   @type table :: nonempty_list(list(any))
 
   # Experimental
-  def reduce(t, acc, fun) do
+  defp reduce(t, acc, fun) do
     t.data
     |> Enum.map(fn(row) -> Enum.reduce(row, acc, fun) end)
     |> Enum.reduce(acc, fun)
@@ -132,9 +132,14 @@ defmodule DataFrame.Table do
     Enum.map(table, fn(x) -> Enum.slice(x, first..last) end)
   end
 
+  # TODO: move somewhere
+  # The implementation is not fast (map will transverse once and Enum.at again
+  # but allows to return a list of list in the order given but list_index
+  # so users of Table can reorder columns and/or rows
   defp multiple_at(list, list_index) do
-    Enum.map(list_index, &(Enum.at(list, &1)))
-    #Enum.map(list_index, fn(index) -> Enum.at(list, index) end)
+    list_index
+    |> Enum.map(fn(index) -> Enum.at(list, index) end)
+    |> Enum.filter(fn(element) -> element != nil end)
   end
 
   # ##################################################

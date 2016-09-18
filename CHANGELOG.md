@@ -3,8 +3,6 @@
 - DataFrame.plot function
 - DataFrame.parse funcion
 - Functions to select columns and rows by name and index
-- Several experimental functions. To rationalize implementation before
-  next version
 
 # 0.2.0
 - DataFrame.describe function

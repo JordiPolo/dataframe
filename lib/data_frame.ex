@@ -152,7 +152,7 @@ defmodule DataFrame do
   # ##################################################
 
   @doc """
-    Returns the information at the top of the frame. Defaults to 5 lines.
+  Returns the information at the top of the frame. Defaults to 5 lines.
   """
   @spec head(Frame.t, integer) :: Frame.t
   def head(frame, size \\ 5) do
@@ -160,7 +160,7 @@ defmodule DataFrame do
   end
 
   @doc """
-    Returns the information at the bottom of the frame. Defaults to 5 lines.
+  Returns the information at the bottom of the frame. Defaults to 5 lines.
   """
   @spec tail(Frame.t, integer) :: Frame.t
   def tail(frame, the_size \\ 5) do
@@ -169,40 +169,86 @@ defmodule DataFrame do
   end
 
   @doc """
-  Returns a Frame with the selected columns by name. similar to loc
-  # TODO: merge with loc?
+  Generic method to return rows based on the value of the index
   """
-  def columns(frame, column_names) do
-    icolumns(frame, indexes_by_name(frame.columns, column_names))
+  def rows(frame, first..last) when is_integer(first) and is_integer(last) do
+    irows(frame, indexes_by_named_range(frame.index, first..last))
   end
-
-  def icolumns(frame, column_indexes) do
-    columns = multiple_at(frame.columns, column_indexes)
-    values = Table.columns(frame.values, column_indexes)
-    DataFrame.new(values, columns, frame.index)
-  end
-
-  def rows(frame, row_names) do
+  def rows(frame, row_names) when is_list(row_names) do
     irows(frame, indexes_by_name(frame.index, row_names))
   end
 
-  def irows(frame, row_indexes) do
+  @doc """
+  Generic method to return rows based on the position of the index
+  """
+  def irows(frame, first..last) when is_integer(first) and is_integer(last) do
+    irows(frame, Enum.to_list(first..last))
+  end
+  def irows(frame, row_indexes) when is_list(row_indexes) do
     rows = multiple_at(frame.index, row_indexes)
     values = Table.rows(frame.values, row_indexes)
     DataFrame.new(values, frame.columns, rows)
   end
 
+  @doc """
+  Returns a Frame with the selected columns by name.
+  """
+  def columns(frame, first..last) when is_integer(first) and is_integer(last) do
+    icolumns(frame, indexes_by_named_range(frame.columns, first..last))
+  end
+  def columns(frame, column_names) when is_list(column_names) do
+    icolumns(frame, indexes_by_name(frame.columns, column_names))
+  end
+
+  @doc """
+  Returns a Frame with the selected columns by position.
+  """
+  def icolumns(frame, first..last) when is_integer(first) and is_integer(last) do
+    icolumns(frame, Enum.to_list(first..last))
+  end
+  def icolumns(frame, column_indexes) when is_list(column_indexes) do
+    columns = multiple_at(frame.columns, column_indexes)
+    values = Table.columns(frame.values, column_indexes)
+    DataFrame.new(values, columns, frame.index)
+  end
+
+  @doc """
+    Returns the data in the frame.
+    Parameters are any list of rows and columns with names or a ranges of names
+    To get only rows or columns check the functions above
+  """
+  @spec loc(Frame.t, Range.t | list(), Range.t | list()) :: Frame.t
+  def loc(frame, row_names, column_names) do
+    frame |> rows(row_names) |> columns(column_names)
+  end
+
+  @doc """
+    Returns a slice of the data in the frame.
+    Parameters are any list of rows and columns
+  """
+  @spec iloc(Frame.t, Range.t | list(integer), Range.t | list(integer)) :: Frame.t
+  def iloc(frame, row_index, column_index) do
+    frame |> irows(row_index) |> icolumns(column_index)
+  end
+
   # TODO: move somewhere
   # same than .at but accepting a list of indexes
   defp multiple_at(list, list_index) do
-    Enum.map(list_index, fn(index) -> Enum.at(list, index) end)
+    list_index
+    |> Enum.map(fn(index) -> Enum.at(list, index) end)
+    |> Enum.filter(fn(element) -> element != nil end)
   end
 
+  defp indexes_by_named_range(list, first..last) do
+    first_index = Enum.find_index(list, fn(x) -> to_string(x) == to_string(Enum.at(first, 0)) end)
+    last_index  = Enum.find_index(list, fn(x) -> to_string(x) == to_string(Enum.at(last, 0)) end)
+    Enum.to_list(first_index..last_index)
+  end
 
-  defp indexes_by_name(name_list, selected_name) when is_list(name_list) and is_binary(selected_name) do
+  defp indexes_by_name(name_list, selected_name) when is_binary(selected_name) do
     indexes_by_name(name_list, [selected_name])
   end
-  defp indexes_by_name(name_list, selected_names) when is_list(name_list) and is_list(selected_names) do
+  defp indexes_by_name(name_list, selected_names) when is_list(selected_names) do
     indexes = name_list |> Enum.with_index |> Enum.reduce([], fn(tuple, acc) ->
       if Enum.member?(selected_names, elem(tuple,0)) do
         [elem(tuple, 1) | acc]
@@ -211,50 +257,6 @@ defmodule DataFrame do
       end
     end)
     Enum.reverse(indexes)
-  end
-
-  @spec column(Frame.t, String.t) :: list()
-  def column(frame, column_name) do
-    column = Enum.find_index(frame.columns, fn(x) -> to_string(x) == to_string(column_name) end)
-    frame.values |> Table.columns([column]) |> List.flatten
-  end
-
-  @doc """
-    Returns a slice of the data in the frame.
-    Parameters are the ranges with names in the index and column
-  """
-  #@spec loc(Frame.t, Range.t, Range.t) :: Frame.t
-  def loc(frame, index_range, column_range) do
-    DataFrame.iloc(frame, index_range_integer(frame, index_range), column_range_integer(frame, column_range))
-  end
-
-  defp index_range_integer(_, :all) do
-    0..-1
-  end
-
-  defp index_range_integer(frame, index_range) do
-    index = Enum.find_index(frame.index, fn(x) -> to_string(x) == to_string(Enum.at(index_range, 0)) end)
-    index..(index + Enum.count(index_range) - 1)
-  end
-
-  defp column_range_integer(_, :all) do
-    0..-1
-  end
-
-  defp column_range_integer(frame, column_range) do
-    column = Enum.find_index(frame.columns, fn(x) -> to_string(x) == to_string(Enum.at(column_range, 0)) end)
-    column..(column + Enum.count(column_range) - 1)
-  end
-
-  @doc """
-    Returns a slice of the data in the frame.
-    Parameters are the ranges with positions in the index and column
-  """
-  def iloc(frame, index, columns) do
-    new_index = frame.index |> Enum.slice(index)
-    new_columns = frame.columns |> Enum.slice(columns)
-    values = frame.values |> Table.slice(index, columns)
-    DataFrame.new(values, new_columns, new_index)
   end
 
   @doc """
@@ -275,6 +277,14 @@ defmodule DataFrame do
     Table.at(frame.values, index, column)
   end
 
+  @doc """
+  Returns a list of data, not a frame like object. with the values of a given column
+  """
+  @spec column(Frame.t, String.t) :: list()
+  def column(frame, column_name) do
+    column = Enum.find_index(frame.columns, fn(x) -> to_string(x) == to_string(column_name) end)
+    frame.values |> Table.columns([column]) |> List.flatten
+  end
 
   @doc """
     Experimental

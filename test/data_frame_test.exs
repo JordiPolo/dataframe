@@ -44,11 +44,11 @@ defmodule DataFrameTest do
 
   describe "head/2" do
     test "empty Frame returns the empty Frame" do
-      assert DataFrame.head(empty_frame, 5) == empty_frame
+      assert DataFrame.head(empty_frame(), 5) == empty_frame()
     end
 
     test "Frame that is shorter than the head size" do
-      assert DataFrame.head(single_entry_frame, 5) == single_entry_frame
+      assert DataFrame.head(single_entry_frame(), 5) == single_entry_frame()
     end
 
     test "Two row Frame's head of one row is a Frame containing the first row" do
@@ -59,11 +59,11 @@ defmodule DataFrameTest do
 
   describe "tail/2" do
     test "empty Frame returns the empty Frame" do
-      assert DataFrame.tail(empty_frame, 5) == empty_frame
+      assert DataFrame.tail(empty_frame(), 5) == empty_frame()
     end
 
     test "Frame that is shorter than the tail size" do
-      assert DataFrame.tail(single_entry_frame, 5) == single_entry_frame
+      assert DataFrame.tail(single_entry_frame(), 5) == single_entry_frame()
     end
 
     test "Two row Frame's tail of one row is a Frame containing the last row" do
