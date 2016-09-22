@@ -1,7 +1,7 @@
-# Master
+# 0.3.0
 - DataFrame.cumsum function
 - DataFrame.plot function
-- DataFrame.parse funcion
+- DataFrame.parse function
 - Functions to select columns and rows by name and index
 
 # 0.2.0

@@ -17,12 +17,6 @@ defmodule DataFrame.Table do
   """
   @type table :: nonempty_list(list(any))
 
-  # Experimental
-  defp reduce(t, acc, fun) do
-    t.data
-    |> Enum.map(fn(row) -> Enum.reduce(row, acc, fun) end)
-    |> Enum.reduce(acc, fun)
-  end
   # ##################################################
   #  Creation
   # ##################################################
@@ -154,6 +148,13 @@ defmodule DataFrame.Table do
   @spec map(table, function) :: table
   def map(table, func) do
     Enum.map(table, fn(column) -> Enum.map(column, fn(y) -> func.(y) end) end)
+  end
+
+  # Experimental
+  def reduce(table, acc, fun) do
+    table
+    |> Enum.map(fn(row) -> Enum.reduce(row, acc, fun) end)
+    |> Enum.reduce(acc, fun)
   end
 
   @spec with_index(table) :: nonempty_list({nonempty_list({any(), non_neg_integer()}), non_neg_integer()})
