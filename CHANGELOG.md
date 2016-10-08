@@ -1,3 +1,8 @@
+# 0.3.1
+- Table.new/0
+- Table.to_row_list/0
+- Solves bug in Table.transpose
+
 # 0.3.0
 - DataFrame.cumsum function
 - DataFrame.plot function

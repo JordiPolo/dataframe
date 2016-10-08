@@ -15,7 +15,7 @@ defmodule DataFrame.Table do
   @typedoc """
     A table is a list of lists, it can contain numbers strings atoms or be empty
   """
-  @type table :: nonempty_list(list(any))
+  @opaque t :: nonempty_list(list(any))
 
   # ##################################################
   #  Creation
@@ -27,7 +27,7 @@ defmodule DataFrame.Table do
     build(row_count, column_count, function)
   end
 
-  @spec build(non_neg_integer, non_neg_integer, function) :: table
+  @spec build(non_neg_integer, non_neg_integer, function) :: t
   def build(row_count, column_count, function) do
     Enum.map(1..row_count, fn (row) -> Enum.map(1..column_count, fn(column) -> function.(row, column) end) end)
   end
@@ -37,7 +37,7 @@ defmodule DataFrame.Table do
     new(list_of_lists)
   end
 
-  @spec new(table) :: table
+  @spec new(t | list) :: t
   def new(list_of_list) do
     list_of_list
   end
@@ -48,11 +48,21 @@ defmodule DataFrame.Table do
     transpose(list_of_lists)
   end
 
+#  @spec new() :: t
+  def new do
+    [[]]
+  end
+
+  @spec to_row_list(t) :: list
+  def to_row_list(table) do
+    table
+  end
+
   # ##################################################
   #  Information
   # ##################################################
 
-  @spec dimensions(table) :: [non_neg_integer]
+  @spec dimensions(t) :: [non_neg_integer]
   def dimensions(table) do
     row_count = table |> Enum.filter(&(!Enum.empty?(&1))) |> Enum.count
     column_count = table |> Enum.at(0) |> Enum.count
@@ -60,11 +70,11 @@ defmodule DataFrame.Table do
   end
 
   def x_dimension(table) do
-    dimensions(table) |> Enum.at(1)
+    table |> dimensions |> Enum.at(1)
   end
 
   def y_dimension(table) do
-    dimensions(table) |> Enum.at(0)
+    table |> dimensions |> Enum.at(0)
   end
 
   def check_dimensional_compatibility!(table, list, dimension) do
@@ -86,42 +96,41 @@ defmodule DataFrame.Table do
     "column"
   end
 
-
   # ##################################################
   #  Selecting
   # ##################################################
 
-  @spec at(table, number, number) :: any
+  @spec at(t, number, number) :: any
   def at(table, row, column) do
     table |> Enum.at(row) |> Enum.at(column)
   end
 
-  @spec slice(table, Range.t, Range.t) :: table
+  @spec slice(t, Range.t, Range.t) :: t
   def slice(table, range_index, range_column) do
     table |> Enum.slice(range_index) |> Enum.map(&Enum.slice(&1, range_column))
   end
 
-  @spec rows_columns(table, Range.t| list, Range.t | list) :: table
+  @spec rows_columns(t, Range.t| list, Range.t | list) :: t
   def rows_columns(table, row_info, column_info) do
     table |> rows(row_info) |> columns(column_info)
   end
 
-  @spec rows(table, list) :: table
+  @spec rows(t, list) :: t
   def rows(table, row_indexes) when is_list(row_indexes) do
     multiple_at(table, row_indexes)
   end
 
-  @spec rows(table, Range.t) :: table
+  @spec rows(t, Range.t) :: t
   def rows(table, first..last) when is_integer(first) and is_integer(last) do
     Enum.slice(table, first..last)
   end
 
-  @spec columns(table, list) :: table
+  @spec columns(t, list) :: t
   def columns(table, column_indexes) when is_list(column_indexes) do
     Enum.map(table, fn(row) -> multiple_at(row, column_indexes) end)
   end
 
-  @spec columns(table, Range.t) :: table
+  @spec columns(t, Range.t) :: t
   def columns(table, first..last) when is_integer(first) and is_integer(last) do
     Enum.map(table, fn(x) -> Enum.slice(x, first..last) end)
   end
@@ -140,12 +149,17 @@ defmodule DataFrame.Table do
   #  Transversing
   # ##################################################
 
-  @spec map_rows(table, function) :: table
+  @spec map_rows(t, function) :: t
   def map_rows(table, func) do
     Enum.map(table, &(func.(&1)))
   end
 
-  @spec map(table, function) :: table
+  @spec map_columns(t, function) :: t
+  def map_columns(table, func) do
+    table |> transpose |> map_rows(func) |> transpose
+  end
+
+  @spec map(t, function) :: t
   def map(table, func) do
     Enum.map(table, fn(column) -> Enum.map(column, fn(y) -> func.(y) end) end)
   end
@@ -157,7 +171,7 @@ defmodule DataFrame.Table do
     |> Enum.reduce(acc, fun)
   end
 
-  @spec with_index(table) :: nonempty_list({nonempty_list({any(), non_neg_integer()}), non_neg_integer()})
+  @spec with_index(t) :: nonempty_list({nonempty_list({any(), non_neg_integer()}), non_neg_integer()})
   def with_index(table) do
     table |> Enum.map(&Enum.with_index/1) |> Enum.with_index
   end
@@ -166,7 +180,7 @@ defmodule DataFrame.Table do
   #  Modyfing
   # ##################################################
 
-  @spec append_column(table, [any]) :: table
+  @spec append_column(t, [any]) :: t
   def append_column(table, column) do
     check_dimensional_compatibility!(table, column, 0)
     column |> Enum.zip(table) |> Enum.map(&Tuple.to_list/1) |> Enum.map(&List.flatten/1)
@@ -178,10 +192,17 @@ defmodule DataFrame.Table do
     [rest, column]
   end
 
-#  @spec transpose(table) :: table
-  def transpose([[]|_]), do: []
+  @spec transpose(t) :: t
+  def transpose([[]]) do
+    [[]]
+  end
 
   def transpose(table) do
-    [Enum.map(table, &hd/1) | transpose(Enum.map(table, &tl/1))]
+    table |> List.zip |> Enum.map(&Tuple.to_list(&1))
+  end
+
+  @spec sort_rows(t, function) :: t
+  def sort_rows(table, sorting_func) do
+    table |> Enum.sort(fn(x,y) -> sorting_func.(x,y) end)
   end
 end

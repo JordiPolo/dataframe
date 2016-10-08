@@ -9,34 +9,33 @@ defmodule DataFrame do
   @doc """
     Creates a new Frame from a 2D table, It creates a numeric index and a numeric column array automatically.
   """
-  def new(table) when is_list(table) do
-    values = Table.new(table)
-    index = autoindex_for_table_dimension(values, 0)
-    columns = autoindex_for_table_dimension(values, 1)
+  def new(values) do
+    index = autoindex_for_values_dimension(values, 0)
+    columns = autoindex_for_values_dimension(values, 1)
     new(values, columns, index)
   end
 
   @doc """
     Creates a new Frame from a 2D table, and a column array. It creates a numeric index automatically.
   """
-  def new(table, columns) when is_list(table) and is_list(columns) do
-    values = Table.new(table)
-    index = autoindex_for_table_dimension(values, 0)
+  def new(values, columns) when is_list(columns) do
+    index = autoindex_for_values_dimension(values, 0)
     new(values, columns, index)
   end
 
   @doc """
     Creates a new Frame from a 2D table, an index and a column array
   """
-  def new(table, columns, index) when is_list(table) and is_list(index) and is_list(columns) do
+  @spec new(Table.table | list, list, list) :: Frame.t
+  def new(table, columns, index) when is_list(index) and is_list(columns) do
     values = Table.new(table)
     Table.check_dimensional_compatibility!(values, index, 0)
     Table.check_dimensional_compatibility!(values, columns, 1)
     %Frame{values: values, index: index, columns: columns}
   end
 
-  defp autoindex_for_table_dimension(table, dimension) do
-    table_dimension = table |> Table.dimensions |> Enum.at(dimension)
+  defp autoindex_for_values_dimension(values, dimension) do
+    table_dimension = values |> Table.new |> Table.dimensions |> Enum.at(dimension)
     if table_dimension == 0 do
       []
     else
@@ -51,7 +50,7 @@ defmodule DataFrame do
   def parse(text) do
     [header | data ] = String.split(text, "\n", trim: true)
     columns = String.split(header, " ", trim: true)
-    data_values = Enum.map(data, &(String.split(&1, " ", trim: true)))
+    data_values = data |> Table.new |> Table.map_rows(&(String.split(&1, " ", trim: true)))
     [values, index] = Table.remove_column(data_values, 0, return_column: true)
     values_data = Table.map(values, &transform_type/1)
     columns_data = Enum.map(columns, &transform_type/1)
@@ -141,7 +140,7 @@ defmodule DataFrame do
     end
     [values, index] = frame.values
       |> Table.append_column(frame.index)
-      |> Enum.sort(fn(x,y) -> sorting_func.(x,y) end)
+      |> Table.sort_rows(fn(x,y) -> sorting_func.(x,y) end)
       |> Table.remove_column(0, return_column: true)
 
       DataFrame.new(values, frame.columns, index)
@@ -245,9 +244,6 @@ defmodule DataFrame do
     Enum.to_list(first_index..last_index)
   end
 
-  defp indexes_by_name(name_list, selected_name) when is_binary(selected_name) do
-    indexes_by_name(name_list, [selected_name])
-  end
   defp indexes_by_name(name_list, selected_names) when is_list(selected_names) do
     indexes = name_list |> Enum.with_index |> Enum.reduce([], fn(tuple, acc) ->
       if Enum.member?(selected_names, elem(tuple,0)) do
@@ -283,7 +279,7 @@ defmodule DataFrame do
   @spec column(Frame.t, String.t) :: list()
   def column(frame, column_name) do
     column = Enum.find_index(frame.columns, fn(x) -> to_string(x) == to_string(column_name) end)
-    frame.values |> Table.columns([column]) |> List.flatten
+    frame.values |> Table.columns([column]) |> Table.to_row_list |> List.flatten
   end
 
   @doc """
@@ -296,7 +292,7 @@ defmodule DataFrame do
     if column_index == nil do
       frame
     else
-      values = Enum.map(frame.values,
+      values = Table.map_rows(frame.values,
        fn(row) ->
          if Enum.at(row, column_index) == expected_value do
            row
@@ -343,7 +339,7 @@ defmodule DataFrame do
   end
 
   defp delete_nil_rows([], _) do
-    {[[]], []}
+    {Table.new, []}
   end
   defp delete_nil_rows(table, list) do
     nil_index = Enum.find_index(table, fn(row) -> Enum.all?(row, fn(element) -> element == nil end) end)
@@ -363,14 +359,13 @@ defmodule DataFrame do
   """
   @spec cumsum(Frame.t) :: Frame.t
   def cumsum(frame) do
-    columns = frame.values |> Table.transpose
-    cumsummed = columns |> Enum.map( fn(column) ->
+    cumsummed = frame.values |> Table.map_columns( fn(column) ->
       Enum.flat_map_reduce(column, 0, fn(x, acc) ->
         {[x + acc], acc + x}
       end)
     end)
-    data = Enum.map cumsummed, &(elem(&1, 0))
-    DataFrame.new(Table.transpose(data), frame.columns, frame.index)
+    data = Enum.at cumsummed, 0
+    DataFrame.new(Table.transpose(data), frame.columns)
   end
 
   @doc """
@@ -390,7 +385,7 @@ defmodule DataFrame do
   """
   def to_csv(frame, filename, header \\ true) do
     file = File.open!(filename, [:write])
-    values = if (header) do
+    values = if header do
       [frame.columns | frame.values]
     else
       frame.values

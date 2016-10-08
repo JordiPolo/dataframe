@@ -3,7 +3,7 @@ defmodule Dataframe.Mixfile do
 
   def project do
     [app: :dataframe,
-     version: "0.3.0",
+     version: "0.3.1",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -45,11 +45,11 @@ defmodule Dataframe.Mixfile do
   defp deps do
     [
       {:explot, "~> 0.1.0"},
-      {:timex, "~> 3.0"},
+      {:timex, "~> 3.0.0"},
       {:csv, "~> 1.4.2"},
       {:credo, "~> 0.4", only: [:dev, :test]},
-      {:dialyxir, "~> 0.3.5", only: [:dev]},
-      {:ex_doc, ">= 0.0.0", only: :dev}
+      {:dialyxir, "~> 0.3", only: [:dev]},
+      {:ex_doc, "~> 0.14", only: :dev}
     ]
   end
 end

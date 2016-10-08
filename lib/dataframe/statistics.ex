@@ -14,7 +14,7 @@ defmodule DataFrame.Statistics do
   # 75%    0.658444  0.041933 -0.034326  0.461706
   # max    1.212112  0.567020  0.276232  1.071804
   def describe(frame) do
-    values = frame.values |> Table.transpose |> Enum.map(&describe_column/1) |> Table.transpose
+    values = frame.values |> Table.map_columns(&describe_column/1)
     DataFrame.new(values, frame.columns, ["count", "mean", "std", "min", "25%", "50%", "75%", "max"])
   end
 

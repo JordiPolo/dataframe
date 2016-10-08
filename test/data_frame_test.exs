@@ -71,4 +71,17 @@ defmodule DataFrameTest do
         DataFrame.new([[1]], [:A], [1])
     end
   end
+
+   describe "transpose/1" do
+    test "Transposing twice a dataframe gives the same grame" do
+      assert DataFrame.transpose(DataFrame.transpose(single_entry_frame())) == single_entry_frame()
+    end
+    test "Transposing an empty Frame returns an empty Frame" do
+      assert DataFrame.transpose(empty_frame()) == empty_frame()
+    end
+    test "Transposing a Frame with data returns a transposed frame" do
+      frame = DataFrame.new([[2,3],[2,3]])
+      assert DataFrame.transpose(frame) == DataFrame.new([[2,2],[3,3]])
+    end
+  end
 end
