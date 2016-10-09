@@ -9,7 +9,8 @@ defmodule Dataframe.Mixfile do
      start_permanent: Mix.env == :prod,
      deps: deps(),
      description: description(),
-     package: package()
+     package: package(),
+     dialyzer: [plt_add_deps: :transitive]
    ]
   end
 

@@ -29,7 +29,9 @@ defmodule DataFrame.Table do
 
   @spec build(non_neg_integer, non_neg_integer, function) :: t
   def build(row_count, column_count, function) do
-    Enum.map(1..row_count, fn (row) -> Enum.map(1..column_count, fn(column) -> function.(row, column) end) end)
+    rows = Enum.to_list 1..row_count
+    columns = Enum.to_list 1..column_count
+    Enum.map(rows, fn (row) -> Enum.map(columns, fn(column) -> function.(row, column) end) end)
   end
 
   def new([h | t]) when is_tuple(h) do

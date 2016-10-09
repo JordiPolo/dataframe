@@ -12,7 +12,13 @@ defmodule DataFrameTest do
     DataFrame.new([[00]], [:A])
   end
 
+  # Creation
+
   describe "new/1" do
+    test "Creates an empty frame from empty list of lists" do
+      assert DataFrame.new([[]]) == empty_frame()
+    end
+
     test "Creates a valid frame from a list of lists" do
       assert DataFrame.new([[1,2,3], [4,5,6]]) ==
         %Frame{values: [[1,2,3], [4,5,6]], index: [0,1], columns: [0,1,2]}
@@ -25,12 +31,11 @@ defmodule DataFrameTest do
   end
 
   describe "new/2" do
-    test "empty input is an empty Frame" do
-      assert DataFrame.new([[]], []) ==
-        %Frame{values: [[]], index: [], columns: []}
+    test "Creates empty frame from empty inputs" do
+      assert DataFrame.new([[]], []) == empty_frame()
     end
 
-    test "a regular dataframe" do
+    test "Creates a Frame from regular inputs" do
       assert DataFrame.new([[0], [1]], [:A]) ==
         %Frame{values: [[0], [1]], index: [0, 1], columns: [:A]}
     end
@@ -41,6 +46,32 @@ defmodule DataFrameTest do
       end
     end
   end
+
+  describe "new/3" do
+    test "Creates empty frame from empty inputs" do
+      assert DataFrame.new([[]], [], []) == empty_frame()
+    end
+
+    test "Creates a Frame from regular inputs" do
+      assert DataFrame.new([[0], [1]], [:A], [1,2]) ==
+        %Frame{values: [[0], [1]], index: [1, 2], columns: [:A]}
+    end
+
+    test "Exception when the dimensions do not match" do
+      assert_raise ArgumentError, "Table dimension 2 does not match the column dimension 1", fn ->
+        DataFrame.new([[0], [1]], [:A], [1])
+      end
+    end
+  end
+
+  describe "parse/1" do
+    test "Creates a DataFrame from parsed input" do
+      input = "              A\n1             0\n2             1"
+      assert DataFrame.parse(input) == %Frame{values: [[0], [1]], index: [1, 2], columns: ["A"]}
+    end
+  end
+
+  # Selection
 
   describe "head/2" do
     test "empty Frame returns the empty Frame" do
@@ -72,7 +103,9 @@ defmodule DataFrameTest do
     end
   end
 
-   describe "transpose/1" do
+  # Modification
+
+  describe "transpose/1" do
     test "Transposing twice a dataframe gives the same grame" do
       assert DataFrame.transpose(DataFrame.transpose(single_entry_frame())) == single_entry_frame()
     end

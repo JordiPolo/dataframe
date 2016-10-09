@@ -10,7 +10,7 @@ defmodule DataFrame.Frame do
   defstruct values: [[]], index: [], columns: []
 
   @type t :: %__MODULE__{
-    values: nonempty_list(list(any())),
+    values: Table.t,
     index: list(any()),
     columns: list(any())
   }

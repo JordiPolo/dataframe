@@ -26,7 +26,7 @@ defmodule DataFrame do
   @doc """
     Creates a new Frame from a 2D table, an index and a column array
   """
-  @spec new(Table.table | list, list, list) :: Frame.t
+  @spec new(Table.t | list, list, list) :: Frame.t
   def new(table, columns, index) when is_list(index) and is_list(columns) do
     values = Table.new(table)
     Table.check_dimensional_compatibility!(values, index, 0)
@@ -84,7 +84,6 @@ defmodule DataFrame do
   def transpose(frame) do
     %Frame{values: Table.transpose(frame.values), index: frame.columns, columns: frame.index}
   end
-
 
   @doc """
   Creates a list of Dataframes grouped by one of the columns.
