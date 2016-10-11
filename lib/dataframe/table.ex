@@ -51,14 +51,11 @@ defmodule DataFrame.Table do
   end
 
 #  @spec new() :: t
-  def new do
-    [[]]
-  end
+  def new, do: [[]]
+
 
   @spec to_row_list(t) :: list
-  def to_row_list(table) do
-    table
-  end
+  def to_row_list(table), do: table
 
   # ##################################################
   #  Information

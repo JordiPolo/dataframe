@@ -1,4 +1,3 @@
-
 defmodule DataFrame do
   @moduledoc """
     Functions to create and modify a Frame, a structure with a 2D table with information, indexes and columns
@@ -182,6 +181,7 @@ defmodule DataFrame do
   def irows(frame, first..last) when is_integer(first) and is_integer(last) do
     irows(frame, Enum.to_list(first..last))
   end
+
   def irows(frame, row_indexes) when is_list(row_indexes) do
     rows = multiple_at(frame.index, row_indexes)
     values = Table.rows(frame.values, row_indexes)
@@ -238,8 +238,8 @@ defmodule DataFrame do
   end
 
   defp indexes_by_named_range(list, first..last) do
-    first_index = Enum.find_index(list, fn(x) -> to_string(x) == to_string(Enum.at(first, 0)) end)
-    last_index  = Enum.find_index(list, fn(x) -> to_string(x) == to_string(Enum.at(last, 0)) end)
+    first_index = Enum.find_index(list, fn(x) -> to_string(x) == to_string(first) end)
+    last_index  = Enum.find_index(list, fn(x) -> to_string(x) == to_string(last) end)
     Enum.to_list(first_index..last_index)
   end
 

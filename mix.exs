@@ -50,7 +50,8 @@ defmodule Dataframe.Mixfile do
       {:csv, "~> 1.4.2"},
       {:credo, "~> 0.4", only: [:dev, :test]},
       {:dialyxir, "~> 0.3", only: [:dev]},
-      {:ex_doc, "~> 0.14", only: :dev}
+      {:ex_doc, "~> 0.14", only: :dev},
+      {:benchee, "~> 0.4", only: :dev}
     ]
   end
 end
