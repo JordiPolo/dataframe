@@ -26,5 +26,10 @@ defmodule Benchmark do
       "rows(list of lists)"  => fn -> DataFrame.rows(dataframe, 1..1000) end,
       "rows(maps)" => fn -> DataFrameMap.rows(dataframe_map, 1..1000) end
     })
+
+    Benchee.run(%{time: 2}, %{
+      "columns(list of lists)"  => fn -> DataFrame.columns(dataframe, 1..3) end,
+      "columns(maps)" => fn -> DataFrameMap.columns(dataframe_map, 1..3) end
+    })
   end
 end

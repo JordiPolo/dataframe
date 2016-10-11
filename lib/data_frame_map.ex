@@ -68,6 +68,22 @@ defmodule DataFrameMap do
     %FrameMap{values: filtered_values, index: filtered_index, columns: frame.columns}
   end
 
+
+  @doc """
+  Returns a Frame with the selected columns by name.
+  """
+  def columns(frame, first..last) when is_integer(first) and is_integer(last) do
+    columns(frame, Enum.to_list(first..last))
+  end
+  def columns(frame, column_names) when is_list(column_names) do
+    string_names = Enum.map(column_names, &to_string/1)
+    filtered_values = Enum.filter frame.values, fn ({{first, second}, value}) ->
+      to_string(second) in string_names
+    end
+    filtered_columns = Enum.filter(frame.columns, fn(element) -> to_string(element) in string_names end)
+    %FrameMap{values: filtered_values, index: frame.index, columns: filtered_columns}
+  end
+
   @spec head(Frame.t, integer) :: Frame.t
   def head(frame, size \\ 5) do
     index = Enum.take(frame.index, size)
