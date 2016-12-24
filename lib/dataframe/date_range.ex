@@ -1,11 +1,7 @@
-require Timex
-use Timex
-
 defmodule DataFrame.DateRange do
   @moduledoc """
   Functions to manage Date ranges
   """
-
 
   @doc """
     Creates a list with dates starting at start_date, for periods number of days
@@ -29,7 +25,17 @@ defmodule DataFrame.DateRange do
 
   def new(start_date, periods) do
     date = Date.from_iso8601!(start_date)
-    Enum.map(0..periods - 1, &Timex.shift(date, days: &1))
+    Enum.map(0..periods - 1, &add_days_to_date(date, &1))
+  end
+
+  defp add_days_to_date(date, number_of_days) do
+    {:ok, time_day} = NaiveDateTime.new(date, Time.utc_now)
+    next_day = NaiveDateTime.add time_day, seconds_to_days(number_of_days), :second
+    NaiveDateTime.to_date next_day
+  end
+
+  defp seconds_to_days(number_of_days) do
+    60 * 60 * 24 * number_of_days
   end
 
 end

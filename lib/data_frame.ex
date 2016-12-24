@@ -48,7 +48,7 @@ defmodule DataFrame do
   """
   @spec parse(String.t) :: Frame.t
   def parse(text) do
-    [header | data ] = String.split(text, "\n", trim: true)
+    [header | data] = String.split(text, "\n", trim: true)
     columns = String.split(header, " ", trim: true)
     data_values = data |> Table.new |> Table.map_rows(&(String.split(&1, " ", trim: true)))
     [values, index] = Table.remove_column(data_values, 0, return_column: true)
@@ -358,7 +358,7 @@ defmodule DataFrame do
   """
   @spec cumsum(Frame.t) :: Frame.t
   def cumsum(frame) do
-    cumsummed = frame.values |> Table.map_columns( fn(column) ->
+    cumsummed = frame.values |> Table.map_columns(fn(column) ->
       Enum.flat_map_reduce(column, 0, fn(x, acc) ->
         {[x + acc], acc + x}
       end)
