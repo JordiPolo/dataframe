@@ -16,7 +16,7 @@ defmodule Dataframe.Mixfile do
 
   defp description do
     """
-    Implementation of R's data.frame() or Python's Pandas for Elixir
+    Implementation of R's data.frame() or Python's Pandas for Elixir.
     """
   end
 
