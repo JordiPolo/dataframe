@@ -10,7 +10,7 @@ Add `dataframe` to your list of dependencies in `mix.exs`:
 
 ```
 def deps do
-  [{:dataframe, "~> 0.1.0"}]
+  [{:dataframe, "~> 0.3.1"}]
 end
 ```
 
